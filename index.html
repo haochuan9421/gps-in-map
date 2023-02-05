@@ -1,0 +1,417 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,minimum-scale=1,user-scalable=no,viewport-fit=cover" />
+    <style type="text/css">
+      body {
+        margin: 1em;
+      }
+      blockquote {
+        margin: 1em 0;
+        padding: 1em;
+        border-radius: 5px;
+        background: #eee;
+      }
+
+      @media (max-width: 960px) {
+        #map > div {
+          width: calc(100vw - 2em);
+          height: calc(100vw - 2em);
+          box-sizing: border-box;
+          border: 1px solid red;
+        }
+
+        #map > div:not(:last-of-type) {
+          border-bottom: none;
+        }
+      }
+
+      @media (min-width: 960px) {
+        #map {
+          display: flex;
+        }
+        #map > div {
+          width: calc((100vw - 2em) / 3);
+          height: calc((100vw - 2em) / 3);
+          box-sizing: border-box;
+          border: 1px solid red;
+        }
+        #map > div:not(:last-of-type) {
+          border-right: none;
+        }
+      }
+    </style>
+    <!-- 加载百度地图的 JS SDK -->
+    <script src="//api.map.baidu.com/api?type=webgl&v=1.0&ak=NKkHkZx8zaGQlp8AopFj6BcBfwPE1xdr"></script>
+    <!-- 加载高德地图的 JS SDK -->
+    <script>
+      window._AMapSecurityConfig = { securityJsCode: "2f6fce6e1bbbfba8ed1d24f3016b9805" };
+    </script>
+    <script src="//webapi.amap.com/maps?v=1.4.15&key=709c37addcc6d4321952b8e14f4f3e3b"></script>
+    <!-- 加载腾讯地图的 JS SDK-->
+    <script src="//map.qq.com/api/gljs?v=1.exp&key=ZEHBZ-VWTED-MVQ4M-PUJDN-BU3KK-ZGBKD"></script>
+    <title>在地图中显示给定的坐标点</title>
+  </head>
+  <body>
+    <h3>在地图中显示给定的坐标点</h3>
+
+    <blockquote>
+      <p>
+        支持通过<a target="_blank" href="https://lbsyun.baidu.com/">百度地图</a>，<a target="_blank" href="https://lbs.amap.com/">高德地图</a>和<a
+          target="_blank"
+          href="https://lbs.qq.com/"
+          >腾讯地图</a
+        >
+        的 JS SDK 在网页中渲染地图和坐标点，坐标点的坐标系可以是 wgs84，gcj02，bd09ll 中的任意一种。
+      </p>
+    </blockquote>
+
+    <blockquote>
+      <p>下面的表单输入经纬度时既可以采用“度分秒”格式，如 <b>113°12'39.6"</b>，也可以采用浮点数格式，如 <b>113.211</b>，两种格式的转化规则是 1 度 = 60 分，1 分 = 60 秒。</p>
+      <p>
+        前面加正负号 <b>+-</b> 可以表示方位（不加默认是 <b>+</b>），对于经度，+ 表示东经，- 表示西经，对应纬度，+ 表示北纬，- 表示南纬，如 <b>-113°12'39.6"</b> 表示西经 113 度 12
+        分 39.6 秒。
+      </p>
+      <p>经度有效范围为 -180 到 +180，纬度有效范围大概在 -85 到 +85。</p>
+    </blockquote>
+
+    <blockquote>
+      <p>测试数据（中国大陆）:</p>
+      <ol>
+        <li>经度 <b>113°56'18.7"</b> 纬度 <b>22°33'4.2"</b>（wgs84 科兴科学园）</li>
+        <li>经度 <b>113.94645</b> 纬度 <b>22.51481</b>（gcj02 中国华润大厦）</li>
+        <li>经度 <b>114.06199121673217</b> 纬度 <b>22.53948892955288</b>（bd09ll 平安金融中心）</li>
+      </ol>
+
+      <p>测试数据（港澳台）:</p>
+      <ol>
+        <li>经度 <b>114.16144</b> 纬度 <b>22.27951</b>（wgs84 香港中银大厦，百度、高德、腾讯均可准确显示）</li>
+        <li>经度 <b>113.55683</b> 纬度 <b>22.18612</b>（wgs84 澳门科学馆，百度、高德、腾讯均可准确显示）</li>
+        <li>
+          经度 <b>121.51513</b> 纬度 <b>25.04291</b>（wgs84 台湾博物馆，百度、腾讯均可准确显示，高德不行，在高德中，台湾的 wgs84 坐标可以直接用，而无需先转成
+          gcj02，转换后反而无法准确显示）
+        </li>
+      </ol>
+
+      <p>测试数据（国外）:</p>
+      <ol>
+        <li>经度 <b>-74.04456</b> 纬度 <b>40.68945</b>（wgs84 纽约自由女神像，百度可以准确显示，高德和腾讯缺少底图）</li>
+        <li>经度 <b>151.21528</b> 纬度 <b>-33.85660</b>（wgs84 悉尼歌剧院，百度可以准确显示，高德和腾讯缺少底图）</li>
+        <li>经度 <b>-58.37021</b> 纬度 <b>-34.60789</b>（wgs84 阿根廷总统府，百度可以准确显示，高德和腾讯缺少底图）</li>
+      </ol>
+    </blockquote>
+
+    <form id="form">
+      <blockquote>
+        <p>
+          <label>
+            <span>经度 (longitude): </span>
+            <input name="longitude" type="text" value="113&#176;56&#39;18.7&#34;" />
+          </label>
+        </p>
+
+        <p>
+          <label>
+            <span>纬度 (latitude): </span>
+            <input name="latitude" type="text" value="22&#176;33&#39;4.2&#34;" />
+          </label>
+        </p>
+
+        <p>
+          <label>
+            <span>坐标系: </span>
+            <select name="coordinate">
+              <option value="wgs84">wgs84（GPS大地坐标系）</option>
+              <option value="gcj02">gcj02（国测局火星坐标系）</option>
+              <option value="bd09ll">bd09ll（百度经纬度坐标系）</option>
+            </select>
+          </label>
+        </p>
+      </blockquote>
+
+      <blockquote>
+        <p>
+          <button type="submit" onclick="showInBmap(event)">在百度地图中显示</button>
+          <button type="submit" onclick="showInAmap(event)">在高德地图中显示</button>
+          <button type="submit" onclick="showInTmap(event)">在腾讯地图中显示</button>
+        </p>
+
+        <p>
+          <button type="submit" onclick="openInBmap(event)">使用百度地图打开</button>
+          <button type="submit" onclick="openInAmap(event)">使用高德地图打开</button>
+          <button type="submit" onclick="openInTmap(event)">使用腾讯地图打开</button>
+          <button type="submit" onclick="openInGmap(event)">使用谷歌地图打开</button>
+        </p>
+      </blockquote>
+    </form>
+
+    <div id="map">
+      <div id="bmap"></div>
+      <div id="amap"></div>
+      <div id="tmap"></div>
+    </div>
+
+    <blockquote>
+      百度地图和高德地图的 JS SDK 自带坐标系转换的方法，但腾讯地图的 JS SDK 尚未提供此能力，只能通过腾讯地图的 HTTP 服务接口来转换，好在该接口可以使用 jsonp
+      的方式调用，且腾讯地图的 <b>Key</b> 既可以用于 JS SDK 的加载也可以用于调用 HTTP 服务，所以地图显示和坐标转换才可以纯在前端搞定。相关文档如下:
+
+      <ol>
+        <li>
+          <a target="_blank" href="https://mapopen-pub-jsapi.bj.bcebos.com/jsapi/reference/jsapi_reference_3_0.html#a7b55">百度地图 JS SDK 的坐标系转换方法</a> 和
+          <a href="https://lbsyun.baidu.com/jsdemo.htm#a5_2" target="_blank">参考 DEMO</a>，如果使用的是 GL 版的 JS SDK 可以参考
+          <a href="https://lbsyun.baidu.com/jsdemo.htm#TranslateoriTobd" target="_blank">这个 DEMO</a>
+        </li>
+        <li>
+          <a target="_blank" href="https://lbs.amap.com/api/jsapi-v2/documentation#convertfrom">高德地图 JS SDK 的坐标系转换方法</a> 和
+          <a href="https://lbs.amap.com/api/jsapi-v2/guide/transform/convertfrom" target="_blank">参考 DEMO</a>
+        </li>
+        <li><a target="_blank" href="https://lbsyun.baidu.com/index.php?title=webapi/guide/changeposition">百度地图坐标系转换的 HTTP 接口</a>（需要单独的 Key，本项目未使用）</li>
+        <li><a target="_blank" href="https://lbs.amap.com/api/webservice/guide/api/convert">高德地图坐标系转换的 HTTP 接口</a>（需要单独的 Key，本项目未使用）</li>
+        <li>
+          <a target="_blank" href="https://lbs.qq.com/service/webService/webServiceGuide/webServiceTranslate">腾讯地图坐标系转换的 HTTP 接口</a>（可复用腾讯地图 JS SDK 的
+          Key，本项目有使用）
+        </li>
+      </ol>
+    </blockquote>
+
+    <blockquote>
+      使用谷歌地图打开坐标时，如果想准确显示坐标点的位置，中国大陆的地点需采用 gcj02 坐标系，非中国大陆的地点需采用 wgs84 坐标系，比如上面“中国华润大厦”的坐标就是 gcj02
+      的，可以在谷歌地图中准确的显示，访问地址: https://maps.google.com/?q=22.51481,113.94645。上面那些非中国大陆的地点（坐标系是 wgs84）也可以在谷歌地图中准确的显示。但像
+      “科兴科学园” 这种大陆的地点，即使坐标系是 wgs84 的，也无法在谷歌地图中准确显示，需要先转成 gcj02 坐标再用谷歌地图打开才行，“科兴科学园” 的 gcj02 坐标是经度 113.9434，纬度
+      22.548145，访问地址: https://maps.google.com/?q=22.548145,113.9434
+    </blockquote>
+  </body>
+  <script>
+    const form = document.querySelector("form");
+    // 获取表单数据
+    function getFormData() {
+      const fd = new FormData(form);
+      const data = Object.fromEntries(fd);
+      data.longitude = format(data.longitude);
+      data.latitude = format(data.latitude);
+      console.log("表单数据:", data);
+      return data;
+    }
+
+    // 将输入的经纬度转化成浮点数
+    function format(text) {
+      text = text.trim();
+      const sign = text[0] === "-" ? -1 : 1;
+      if (text[0] === "-" || text[0] === "+") {
+        text = text.substring(1);
+      }
+
+      const d = ["0"];
+      const f = ["0"];
+      const m = ["0"];
+
+      let stage = {
+        endChar: "°",
+        chars: d,
+        next: {
+          endChar: "'",
+          chars: f,
+          next: {
+            endChar: '"',
+            chars: m,
+          },
+        },
+      };
+
+      for (let i = 0; i < text.length; i++) {
+        const char = text[i];
+        if (char === stage.endChar) {
+          stage = stage.next;
+        } else {
+          stage.chars.push(char);
+        }
+      }
+
+      return sign * (parseFloat(d.join("")) + parseFloat(f.join("")) / 60 + parseFloat(m.join("")) / 3600);
+    }
+
+    // 在百度地图中标出坐标点
+    let bmap;
+    async function showInBmap(e) {
+      e.preventDefault();
+
+      const { longitude, latitude, coordinate } = getFormData();
+      const center = await new Promise((resolve, reject) => {
+        const point = new BMapGL.Point(longitude, latitude);
+        // 非 bd09ll 坐标时需先进行坐标系转换
+        if (coordinate === "bd09ll") {
+          resolve(point);
+        } else {
+          const convertor = new BMapGL.Convertor();
+          convertor.translate([point], coordinate === "wgs84" ? COORDINATES_WGS84 : COORDINATES_GCJ02, COORDINATES_BD09, (result) => {
+            console.log("使用百度地图 JS SDK 进行坐标转换的结果（bd09ll）:", result);
+            if (result.status == 0) {
+              resolve(result.points[0]);
+            } else {
+              reject(new Error("坐标转化错误"));
+            }
+          });
+        }
+      });
+
+      if (bmap) {
+        bmap.clearOverlays();
+      } else {
+        bmap = new BMapGL.Map("bmap");
+        bmap.enableScrollWheelZoom(true);
+      }
+      bmap.centerAndZoom(center, 18);
+      bmap.addOverlay(new BMapGL.Marker(center));
+    }
+
+    // 在高德地图中标出坐标点
+    let amap;
+    async function showInAmap(e) {
+      e.preventDefault();
+
+      const { longitude, latitude, coordinate } = getFormData();
+      const center = await new Promise((resolve, reject) => {
+        const point = [longitude, latitude];
+        // 非 gcj02 坐标时需先进行坐标系转换
+        if (coordinate === "gcj02") {
+          resolve(point);
+        } else {
+          AMap.convertFrom(point, coordinate === "wgs84" ? "gps" : "baidu", (status, result) => {
+            console.log("使用高德地图 JS SDK 进行坐标转换的结果（gcj02）:", status, result);
+            if (status === "complete" && result.info == "ok") {
+              resolve(result.locations[0]);
+            } else {
+              reject(new Error("坐标转化错误"));
+            }
+          });
+        }
+      });
+
+      if (amap) {
+        amap.clearMap();
+      } else {
+        amap = new AMap.Map("amap");
+      }
+      amap.setZoomAndCenter(17, center);
+      amap.add(new AMap.Marker({ position: center }));
+    }
+
+    // 在腾讯地图中标出坐标点
+    let tmap;
+    let marker;
+    async function showInTmap(e) {
+      e.preventDefault();
+
+      const { longitude, latitude, coordinate } = getFormData();
+      const center = await new Promise((resolve, reject) => {
+        const point = new TMap.LatLng(latitude, longitude);
+        // 非 gcj02 坐标时需先进行坐标系转换
+        if (coordinate === "gcj02") {
+          resolve(point);
+        } else {
+          const script = document.createElement("script");
+          script.src = `https://apis.map.qq.com/ws/coord/v1/translate?${new URLSearchParams({
+            key: "ZEHBZ-VWTED-MVQ4M-PUJDN-BU3KK-ZGBKD",
+            locations: `${latitude},${longitude}`,
+            type: coordinate === "wgs84" ? 1 : 3,
+            output: "jsonp",
+            callback: "tmapJsonpCb",
+          })}`;
+          window.tmapJsonpCb = (result) => {
+            console.log("使用腾讯地图 HTTP 服务进行坐标转换的结果（gcj02）:", result);
+            if (result.status == 0) {
+              resolve(new TMap.LatLng(result.locations[0].lat, result.locations[0].lng));
+            } else {
+              reject(new Error("坐标转化错误"));
+            }
+            document.body.removeChild(script);
+          };
+          document.body.appendChild(script);
+        }
+      });
+
+      if (tmap) {
+        marker.setMap(null);
+        marker = null;
+      } else {
+        tmap = new TMap.Map("tmap");
+      }
+      tmap.setCenter(center);
+      tmap.setZoom(17);
+      marker = new TMap.MultiMarker({
+        map: tmap,
+        geometries: [{ position: center }],
+      });
+    }
+
+    // 生成随机字符串
+    function randomString(len = 8) {
+      let alphabet = "abcdefghijklmnopqrstuvwxyz";
+      let str = "";
+      for (let i = 0; i < len; i++) {
+        str += alphabet[Math.floor(Math.random() * 26)];
+      }
+      return str;
+    }
+
+    // 使用百度地图打开（中国大陆和港澳台地区均可准确显示，国外的无法打开，打开时会直接显示当前位置的地图，而不是跳到到目标位置）
+    // 文档地址: https://lbsyun.baidu.com/index.php?title=uri/api/web
+    async function openInBmap(e) {
+      e.preventDefault();
+
+      const { longitude, latitude, coordinate } = getFormData();
+      const link = `http://api.map.baidu.com/marker?location=${latitude},${longitude}&title=自定义标题&content=自定义内容&output=html&coord_type=${coordinate}&src=webapp.${randomString()}.${randomString()}`;
+      console.log("百度地图跳转地址: ", link);
+      window.open(link);
+    }
+
+    // 使用高德地图打开（中国大陆和港澳地区均可准确显示，台湾的坐标如果是 wgs84 的，传参时 coordinate 也要设置为 'gaode' 才能准确显示，这和使用 JS SDK 来显示坐标点时的情况一样，国外虽然会跳到目标位置，也会添加标记，但缺少高清底图）
+    // 文档地址: https://lbs.amap.com/api/uri-api/guide/mobile-web/point
+    async function openInAmap(e) {
+      e.preventDefault();
+
+      const { longitude, latitude, coordinate } = getFormData();
+      if (coordinate === "bd09ll") {
+        alert("使用高德地图打开坐标时，暂不支持使用百度坐标系的坐标");
+        return;
+      }
+      const link = `https://uri.amap.com/marker?position=${longitude},${latitude}&name=自定义标题&src=${randomString()}&coordinate=${
+        coordinate === "gcj02" ? "gaode" : "wgs84"
+      }&callnative=0`;
+      console.log("高德地图跳转地址: ", link);
+      window.open(link);
+    }
+
+    // 使用腾讯地图打开（中国大陆和港澳台地区均可准确显示，国外虽然会跳到目标位置，也会添加标记，但缺少高清底图）
+    // 文档地址: https://lbs.qq.com/webApi/uriV1/uriGuide/uriWebMarker
+    async function openInTmap(e) {
+      e.preventDefault();
+
+      const { longitude, latitude, coordinate } = getFormData();
+      if (coordinate === "bd09ll") {
+        alert("使用腾讯地图打开坐标时，暂不支持使用百度坐标系的坐标");
+        return;
+      }
+      const link = `https://apis.map.qq.com/uri/v1/marker?marker=coord:${latitude},${longitude};title:自定义标题;addr:自定义地址&coord_type=${
+        coordinate === "gcj02" ? 2 : 1
+      }&referer=${randomString()}`;
+      console.log("腾讯地图跳转地址: ", link);
+      window.open(link);
+    }
+
+    // 使用谷歌地图打开坐标（全球所有位置均可准确显示，但要注意中国大陆的地点需采用 gcj02 坐标系，非中国大陆的地点需采用 wgs84 坐标系）
+    async function openInGmap(e) {
+      e.preventDefault();
+
+      const { longitude, latitude, coordinate } = getFormData();
+      if (coordinate === "bd09ll") {
+        alert("使用谷歌地图打开坐标时，中国大陆的地点需采用 gcj02 坐标系，非中国大陆的地点需采用 wgs84 坐标系");
+        return;
+      }
+      const link = `https://maps.google.com/?q=${latitude},${longitude}`;
+      console.log("谷歌地图跳转地址: ", link);
+      window.open(link);
+    }
+  </script>
+</html>
