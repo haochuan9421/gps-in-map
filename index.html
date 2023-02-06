@@ -141,7 +141,8 @@
           <button type="submit" onclick="openInBmap(event)">使用百度地图打开</button>
           <button type="submit" onclick="openInAmap(event)">使用高德地图打开</button>
           <button type="submit" onclick="openInTmap(event)">使用腾讯地图打开</button>
-          <button type="submit" onclick="openInGmap(event)">使用谷歌地图打开</button>
+          <button type="submit" onclick="openInGmap(event)">使用 Google Maps 打开</button>
+          <button type="submit" onclick="openInGearth(event)">使用 Google Earth 打开</button>
         </p>
       </blockquote>
     </form>
@@ -176,10 +177,10 @@
     </blockquote>
 
     <blockquote>
-      使用谷歌地图打开坐标时，如果想准确显示坐标点的位置，中国大陆的地点需采用 gcj02 坐标系，非中国大陆的地点需采用 wgs84 坐标系，比如上面“中国华润大厦”的坐标就是 gcj02
-      的，可以在谷歌地图中准确的显示，访问地址: https://maps.google.com/?q=22.51481,113.94645。上面那些非中国大陆的地点（坐标系是 wgs84）也可以在谷歌地图中准确的显示。但像
-      “科兴科学园” 这种大陆的地点，即使坐标系是 wgs84 的，也无法在谷歌地图中准确显示，需要先转成 gcj02 坐标再用谷歌地图打开才行，“科兴科学园” 的 gcj02 坐标是经度 113.9434，纬度
-      22.548145，访问地址: https://maps.google.com/?q=22.548145,113.9434
+      使用 Google Maps 打开坐标时，如果想准确显示坐标点的位置，中国大陆的地点需采用 gcj02 坐标系，非中国大陆的地点需采用 wgs84 坐标系，比如上面“中国华润大厦”的坐标就是 gcj02
+      的，可以在 Google Maps 中准确的显示，访问地址: https://maps.google.com/?q=22.51481,113.94645。上面那些非中国大陆的地点（坐标系是 wgs84）也可以在 Google Maps
+      中准确的显示。但像 “科兴科学园” 这种大陆的地点，即使坐标系是 wgs84 的，也无法在 Google Maps 中准确显示，需要先转成 gcj02 坐标再用 Google Maps 打开才行，“科兴科学园” 的 gcj02
+      坐标是经度 113.9434，纬度 22.548145，访问地址: https://maps.google.com/?q=22.548145,113.9434
     </blockquote>
   </body>
   <script>
@@ -400,17 +401,33 @@
       window.open(link);
     }
 
-    // 使用谷歌地图打开坐标（全球所有位置均可准确显示，但要注意中国大陆的地点需采用 gcj02 坐标系，非中国大陆的地点需采用 wgs84 坐标系）
+    // 使用 Google Maps 打开坐标（全球所有位置均可准确显示，但要注意中国大陆的地点需采用 gcj02 坐标系，非中国大陆的地点需采用 wgs84 坐标系）
     async function openInGmap(e) {
       e.preventDefault();
 
       const { longitude, latitude, coordinate } = getFormData();
       if (coordinate === "bd09ll") {
-        alert("使用谷歌地图打开坐标时，中国大陆的地点需采用 gcj02 坐标系，非中国大陆的地点需采用 wgs84 坐标系");
+        alert("使用 Google Maps 打开坐标时，中国大陆的地点需采用 gcj02 坐标系，非中国大陆的地点需采用 wgs84 坐标系");
         return;
       }
       const link = `https://maps.google.com/?q=${latitude},${longitude}`;
-      console.log("谷歌地图跳转地址: ", link);
+      console.log(" Google Maps 跳转地址: ", link);
+      window.open(link);
+    }
+
+    // 使用 Google Earth 打开坐标（全球所有位置均可准确显示，坐标系需采用 wgs84，中国大陆的地点虽然也可以准确显示，但是一些文字标记是错的，感觉这些文字标记还是基于 gcj02 坐标系做的）
+    async function openInGearth(e) {
+      e.preventDefault();
+
+      const { longitude, latitude, coordinate } = getFormData();
+      if (coordinate === "bd09ll") {
+        alert("使用 Google Earth 打开坐标时，需采用 wgs84 坐标系");
+        return;
+      }
+
+      // https://earth.google.com/web/search/35°41'21.29"N+140°3'7.21"E
+      const link = `https://earth.google.com/web/search/${latitude},${longitude}`;
+      console.log(" Google Earth 跳转地址: ", link);
       window.open(link);
     }
   </script>
